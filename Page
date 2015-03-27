@@ -1,0 +1,32 @@
+@isTest
+/*
+Author      : Abhishek Ray
+Created Date: March 2015
+Description : Test class for LeadController
+*/ 
+public class ClassForLeadControllerTest{
+
+    static testMethod void leadControllerTest(){
+    
+        list<Lead> listOfLeads = new list<Lead>();
+        
+        listOfLeads.add(new Lead(FirstName = 'TestFirstName',LastName = 'TestLastName',Company = 'TestCompany',CountryCode = 'US',phone = '433434543',MobilePhone= '568796',street = '2 Steel',city = 'CA',PostalCode='456464',website ='www.jadeglobal.com',industry='Banking',description='This Lead Capture From Web'));
+        listOfLeads.add(new Lead(FirstName = 'TestFirstName',LastName = 'TestLastName',Company = 'TestCompany',CountryCode = 'US',phone = '433434543',MobilePhone= '568796',street = '2 Steel',city = 'CA',PostalCode='456464',website ='www.jadeglobal.com',industry='Banking',description='This Lead Capture From Web'));
+        listOfLeads.add(new Lead(FirstName = 'TestFirstName',LastName = 'TestLastName',Company = 'TestCompany',CountryCode = 'US',phone = '433434543',MobilePhone= '568796',street = '2 Steel',city = 'CA',PostalCode='456464',website ='www.jadeglobal.com',industry='Banking',description='This Lead Capture From Web'));
+        listOfLeads.add(new Lead(FirstName = 'TestFirstName',LastName = 'TestLastName',Company = 'TestCompany',CountryCode = 'US',phone = '433434543',MobilePhone= '568796',street = '2 Steel',city = 'CA',PostalCode='456464',website ='www.jadeglobal.com',industry='Banking',description='This Lead Capture From Web'));
+        
+        insert listOfLeads;
+        
+        ApexPages.StandardSetController sc = new ApexPages.StandardSetController(listOfLeads);
+        LeadController leadControllerObj = new LeadController(sc);
+        
+        leadControllerObj.selectedLeads = listOfLeads;
+        leadControllerObj.convert();
+        leadControllerObj.cancel();
+    
+    }
+
+
+
+
+}
