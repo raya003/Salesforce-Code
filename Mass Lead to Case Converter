@@ -1,0 +1,110 @@
+/*
+Author      : Abhishek Ray
+Created Date: March 2015
+*/ 
+public with sharing class LeadController{
+    
+    public List<Lead> selectedLeads;
+    public boolean isVisible{set;get;}
+    public LeadController(ApexPages.StandardSetController standardSetController){
+        isVisible = true;
+        selectedLeads = (List<Lead>) standardSetController.getSelected();
+        if(selectedLeads.isEmpty()){
+            isVisible = false;
+            ApexPages.Message myMsg = new ApexPages.Message(ApexPages.Severity.ERROR,'No record was selected on the list view. Please click cancel button and select records for mass conversion.');
+            ApexPages.addMessage(myMsg);
+        }    
+        system.debug('cdjsskjcdndsncds----->  '+selectedLeads);
+    }
+    
+    public PageReference convert(){
+        savepoint sp;
+        try{
+            sp = Database.setSavepoint();
+            List<QueueSobject> listQueues = [SELECT Id,queue.Name, QueueId FROM QueueSobject WHERE SobjectType = 'Case'and queue.Name = 'Customer Service Cases'];
+            RecordType caseRecordTypeInfo = [SELECT Id FROM RecordType WHERE Name = 'Client Services' AND SobjectType = 'Case'];
+            
+            Set<Id> setOfLeadsIds = new Set<id>();
+            for(Lead lead : selectedLeads){
+                setOfLeadsIds.add(lead.id);        
+            }
+            
+            List<Lead> listOfLeads = [select id,Name,Company,Phone,City,Street,Country,Email,PostalCode,MobilePhone,Website,Description,Industry,Web_To_Lead_Notes__c From Lead where id IN :setOfLeadsIds];
+            list<Case> listOfCase = new list<Case>();
+            for(Lead lead : listOfLeads){
+                String combineContactInfos = '';
+                Case caseObj = new Case();
+                caseObj.OwnerId = listQueues[0].QueueId;
+                caseObj.RecordTypeId = caseRecordTypeInfo.id;
+                
+                if(lead.name != null){
+                    combineContactInfos += 'Name: ' + lead.name + '\r\n';
+                }
+                if(lead.company != null){
+                    combineContactInfos += 'Company: ' + lead.company + '\r\n';
+                }
+                if(lead.phone != null){
+                    combineContactInfos += 'Phone: ' + lead.phone + '\r\n';
+                }
+                if(lead.MobilePhone != null){
+                    combineContactInfos += 'Mobile: ' + lead.MobilePhone + '\r\n';
+                }
+                if(lead.street != null){
+                    combineContactInfos += 'Street: ' + lead.street + '\r\n';
+                }
+                if(lead.city != null){
+                    combineContactInfos += 'City: ' + lead.city + '\r\n';
+                }   
+                if(lead.PostalCode != null){
+                    combineContactInfos += 'Postal Code: ' + lead.PostalCode + '\r\n';
+                }   
+                if(lead.country != null){
+                    combineContactInfos += 'Country: ' + lead.country + '\r\n';
+                }   
+                if(lead.website != null){
+                    combineContactInfos += 'Website: ' + lead.website + '\r\n';
+                }
+                if(lead.industry != null){
+                    combineContactInfos += 'Industry: ' + lead.industry + '\r\n';
+                }   
+                if(lead.description != null){
+                    combineContactInfos += 'Description: ' + lead.description + '\r\n';
+                }  
+                
+                caseObj.Description = combineContactInfos;
+                caseObj.Origin = 'Customer Service';
+                caseObj.Status = 'New';
+                caseObj.Subject = lead.Web_To_Lead_Notes__c;
+                caseObj.SuppliedEmail = lead.email;
+                listOfCase.add(caseObj);
+            }
+            
+            if(!listOfCase.isEmpty()){
+                insert listOfCase;
+                delete listOfLeads;
+                Schema.DescribeSObjectResult result = Lead.SObjectType.getDescribe();
+                PageReference pageRef = new PageReference('/' + result.getKeyPrefix());
+                pageRef.setRedirect(true);
+                return pageRef;    
+            }
+        } catch(Exception e){
+             ApexPages.Message myMsg = new ApexPages.Message(ApexPages.Severity.ERROR,' '+e.getMessage()+' '+e.getStackTraceString());
+             ApexPages.addMessage(myMsg);
+             Database.rollback(sp);
+        }
+        
+        return null;
+    }
+    
+    public PageReference cancel(){
+        Schema.DescribeSObjectResult result = Lead.SObjectType.getDescribe();
+        PageReference pageRef = new PageReference('/' + result.getKeyPrefix());
+        pageRef.setRedirect(true);
+        return pageRef;
+    }
+
+
+
+
+
+}
