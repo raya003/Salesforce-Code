@@ -21,7 +21,7 @@ public class ClassForLeadControllerTest{
         LeadController leadControllerObj = new LeadController(sc);
         
         leadControllerObj.selectedLeads = listOfLeads;
-        leadControllerObj.convert();
+        leadControllerObj.convert(); 
         leadControllerObj.cancel();
     
     }
